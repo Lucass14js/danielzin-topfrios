@@ -178,3 +178,4 @@ Este é um projeto personalizado para DanielzinGelado. Para sugestões ou melhor
 ## 📄 Licença
 
 Projeto privado - Todos os direitos reservados.
+# Deploy trigger
