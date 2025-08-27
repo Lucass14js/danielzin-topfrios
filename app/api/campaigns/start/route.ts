@@ -11,6 +11,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Campaign ID é obrigatório' }, { status: 400 })
     }
 
+    if (!supabaseAdmin) {
+      return NextResponse.json({ error: 'Erro de configuração do servidor' }, { status: 500 })
+    }
+
     // Buscar dados da campanha
     const { data: campaign, error: campaignError } = await supabaseAdmin
       .from('campaigns')
@@ -92,6 +96,8 @@ export async function POST(request: NextRequest) {
 
 async function processCampaignInBackground(campaignId: string) {
   try {
+    if (!supabaseAdmin) return
+    
     // Buscar dados da campanha novamente
     const { data: campaign } = await supabaseAdmin
       .from('campaigns')
@@ -220,14 +226,18 @@ async function processCampaignInBackground(campaignId: string) {
     console.error('Erro no processamento da campanha:', error)
     
     // Marcar campanha como com erro
-    await supabaseAdmin
-      .from('campaigns')
-      .update({ status: 'cancelled' })
-      .eq('id', campaignId)
+    if (supabaseAdmin) {
+      await supabaseAdmin
+        .from('campaigns')
+        .update({ status: 'cancelled' })
+        .eq('id', campaignId)
+    }
   }
 }
 
 async function updateCampaignCounters(campaignId: string) {
+  if (!supabaseAdmin) return
+  
   const { data: contacts } = await supabaseAdmin
     .from('campaign_contacts')
     .select('status')

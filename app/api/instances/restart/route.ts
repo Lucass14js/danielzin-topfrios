@@ -10,6 +10,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Instance ID é obrigatório' }, { status: 400 })
     }
 
+    if (!supabaseAdmin) {
+      return NextResponse.json({ error: 'Erro de configuração do servidor' }, { status: 500 })
+    }
+
     // Buscar dados da instância
     const { data: instance, error } = await supabaseAdmin
       .from('instances')
@@ -26,10 +30,12 @@ export async function POST(request: NextRequest) {
       await EvolutionAPI.restartInstance(instance.name)
 
       // Atualizar status
-      await supabaseAdmin
-        .from('instances')
-        .update({ status: 'connecting' })
-        .eq('id', instanceId)
+      if (supabaseAdmin) {
+        await supabaseAdmin
+          .from('instances')
+          .update({ status: 'connecting' })
+          .eq('id', instanceId)
+      }
 
       return NextResponse.json({ success: true })
 

@@ -8,6 +8,11 @@ export async function POST(request: NextRequest) {
     // Log do evento recebido
     console.log('Webhook recebido:', JSON.stringify(body, null, 2))
 
+    if (!supabaseAdmin) {
+      console.error('supabaseAdmin não configurado')
+      return NextResponse.json({ error: 'Erro de configuração do servidor' }, { status: 500 })
+    }
+
     // Filtrar eventos apenas de contatos conhecidos (exceto eventos de sistema)
     const systemEvents = ['CONNECTION_UPDATE', 'QRCODE_UPDATED']
     const remoteJid = body.data?.key?.remoteJid
@@ -70,6 +75,8 @@ export async function POST(request: NextRequest) {
 
 async function handleConnectionUpdate(body: any) {
   try {
+    if (!supabaseAdmin) return
+    
     const instanceName = body.instance
     const connectionData = body.data
     
@@ -100,6 +107,8 @@ async function handleConnectionUpdate(body: any) {
 
 async function handleQRCodeUpdate(body: any) {
   try {
+    if (!supabaseAdmin) return
+    
     const instanceName = body.instance
     const qrCode = body.data.qrcode
 
@@ -116,6 +125,8 @@ async function handleQRCodeUpdate(body: any) {
 
 async function handleMessageUpdate(body: any) {
   try {
+    if (!supabaseAdmin) return
+    
     const messageData = body.data
     const messageId = messageData.key?.id
     const remoteJid = messageData.key?.remoteJid
@@ -161,6 +172,8 @@ async function handleMessageUpdate(body: any) {
 
 async function handleSendMessage(body: any) {
   try {
+    if (!supabaseAdmin) return
+    
     const messageData = body.data
     const messageId = messageData.key?.id
 
@@ -194,6 +207,8 @@ async function handleSendMessage(body: any) {
 
 async function updateCampaignCounters(campaignId: string) {
   try {
+    if (!supabaseAdmin) return
+    
     // Contar status dos contatos da campanha
     const { data: contacts } = await supabaseAdmin
       .from('campaign_contacts')

@@ -11,6 +11,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Audience ID é obrigatório' }, { status: 400 })
     }
 
+    if (!supabaseAdmin) {
+      return NextResponse.json({ error: 'Erro de configuração do servidor' }, { status: 500 })
+    }
+
     // Buscar contatos da audiência que ainda não foram verificados
     const { data: contacts, error } = await supabaseAdmin
       .from('contacts')
@@ -104,6 +108,8 @@ export async function POST(request: NextRequest) {
 }
 
 async function updateAudienceCounters(audienceId: string) {
+  if (!supabaseAdmin) return
+  
   const { data: contacts } = await supabaseAdmin
     .from('contacts')
     .select('status, has_whatsapp')

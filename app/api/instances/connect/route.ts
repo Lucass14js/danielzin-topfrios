@@ -22,6 +22,10 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Instance ID é obrigatório' }, { status: 400 })
     }
 
+    if (!supabaseAdmin) {
+      return NextResponse.json({ error: 'Erro de configuração do servidor' }, { status: 500 })
+    }
+
     // Buscar dados da instância
     const { data: instance, error } = await supabaseAdmin
       .from('instances')
@@ -34,10 +38,12 @@ export async function POST(request: NextRequest) {
     }
 
     // Atualizar status para connecting
-    await supabaseAdmin
-      .from('instances')
-      .update({ status: 'connecting' })
-      .eq('id', instanceId)
+    if (supabaseAdmin) {
+      await supabaseAdmin
+        .from('instances')
+        .update({ status: 'connecting' })
+        .eq('id', instanceId)
+    }
 
     try {
       // Preparar configurações de proxy se disponíveis
@@ -70,13 +76,15 @@ export async function POST(request: NextRequest) {
       }
 
       // Atualizar instância com QR code se disponível
-      await supabaseAdmin
-        .from('instances')
-        .update({ 
-          qr_code: qrCode,
-          status: connectionStatus.state === 'open' ? 'connected' : 'connecting'
-        })
-        .eq('id', instanceId)
+      if (supabaseAdmin) {
+        await supabaseAdmin
+          .from('instances')
+          .update({ 
+            qr_code: qrCode,
+            status: connectionStatus.state === 'open' ? 'connected' : 'connecting'
+          })
+          .eq('id', instanceId)
+      }
 
       return NextResponse.json({ 
         success: true, 
@@ -88,10 +96,12 @@ export async function POST(request: NextRequest) {
       console.error('Erro na Evolution API:', evolutionError)
       
       // Reverter status em caso de erro
-      await supabaseAdmin
-        .from('instances')
-        .update({ status: 'disconnected' })
-        .eq('id', instanceId)
+      if (supabaseAdmin) {
+        await supabaseAdmin
+          .from('instances')
+          .update({ status: 'disconnected' })
+          .eq('id', instanceId)
+      }
 
       return NextResponse.json({ 
         error: 'Erro ao conectar com a Evolution API' 
